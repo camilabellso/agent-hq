@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HDShips — Agent HQ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* colours pulled from the screenshot */
+      --bg:        #070d17;
+      --navy:      #0b1828;
+      --panel:     #0e1f33;
+      --teal:      #61FFF7;
+      --teal-glow: rgba(97,255,247,0.10);
+      --teal-dim:  rgba(97,255,247,0.06);
+      --black:     #070909;
+      --white:     #f0f4f8;
+      --muted:     #6b82a0;
+      --border:    rgba(97,255,247,0.10);
+      --error:     #f05c5c;
+
+      /* type scale */
+      --f-heading:  24px;
+      --f-sub:      12px;
+      --f-body:     10px;
+      --w-semi:     600;
+      --w-light:    300;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: var(--f-body);
+      font-weight: var(--w-light);
+      background: var(--bg);
+      color: var(--white);
+      overflow: hidden;
+    }
+
+    /* ── faint diagonal streaks matching the site hero bg ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        linear-gradient(120deg, transparent 40%, rgba(97,255,247,.018) 50%, transparent 60%),
+        linear-gradient(240deg, transparent 40%, rgba(97,255,247,.012) 50%, transparent 60%);
+      background-size: 80px 80px;
+      pointer-events: none;
+    }
+
+    /* ── top-left teal glow (matches site) ── */
+    .glow-tl {
+      position: fixed;
+      top: -180px; left: -140px;
+      width: 600px; height: 600px;
+      background: radial-gradient(ellipse, rgba(97,255,247,.08) 0%, transparent 60%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── layout ── */
+    .scene {
+      position: relative; z-index: 1;
+      display: flex;
+      align-items: center; justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    /* ── card — matches the panel style in the screenshot ── */
+    .card {
+      width: 100%; max-width: 420px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(97,255,247,.04),
+        0 32px 80px rgba(0,0,0,.55);
+      animation: riseIn .55s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* teal top accent bar */
+    .card-bar {
+      height: 2px;
+      background: linear-gradient(90deg, var(--teal) 0%, rgba(97,255,247,.25) 60%, transparent 100%);
+    }
+
+    .card-body { padding: 2.5rem 2.25rem 2rem; }
+
+    /* ── logo mark — circular arrow like the site ── */
+    .brand {
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .logo-mark {
+      width: 48px; height: 48px; flex-shrink: 0;
+      position: relative;
+    }
+    .logo-mark svg { width: 48px; height: 48px; }
+
+    .brand-text { line-height: 1.15; }
+
+    /* "hdships" in lowercase matching the site wordmark */
+    .brand-name {
+      font-size: 22px;
+      font-weight: var(--w-semi);
+      letter-spacing: -.01em;
+      color: var(--white);
+      display: flex; align-items: baseline; gap: 1px;
+    }
+    .brand-name .tl { color: var(--teal); }
+
+    .brand-tagline {
+      font-size: var(--f-body);
+      font-weight: var(--w-light);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* ── divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+      margin-bottom: 1.75rem;
+    }
+
+    /* ── headings ── */
+    h1 {
+      font-size: var(--f-heading);   /* 24pt */
+      font-weight: var(--w-semi);    /* semi bold */
+      line-height: 1.2;
+      letter-spacing: -.02em;
+      color: var(--white);
+      margin-bottom: .6rem;
+    }
+
+    /* ── subheading ── */
+    .subhead {
+      font-size: var(--f-sub);       /* 12pt */
+      font-weight: var(--w-semi);    /* semi bold */
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    /* ── form ── */
+    .field { margin-bottom: 1rem; }
+
+    label {
+      display: block;
+      font-size: var(--f-body);      /* 10pt */
+      font-weight: var(--w-semi);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: .45rem;
+    }
+
+    .input-wrap { position: relative; display: flex; align-items: center; }
+
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: .75rem 2.8rem .75rem .85rem;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(97,255,247,.12);
+      border-radius: 3px;
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: var(--f-sub);
+      font-weight: var(--w-light);
+      letter-spacing: .04em;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    input:focus {
+      border-color: rgba(97,255,247,.4);
+      box-shadow: 0 0 0 3px rgba(97,255,247,.06);
+    }
+    input::placeholder {
+      color: rgba(107,130,160,.4);
+      font-weight: var(--w-light);
+    }
+
+    .toggle-vis {
+      position: absolute; right: .8rem;
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); padding: 0; line-height: 1;
+      transition: color .2s;
+    }
+    .toggle-vis:hover { color: var(--teal); }
+    .toggle-vis svg { width: 15px; height: 15px; display: block; }
+
+    /* ── error ── */
+    .error-msg {
+      display: none; align-items: center; gap: .35rem;
+      font-size: var(--f-body);
+      font-weight: var(--w-light);
+      color: var(--error);
+      margin-top: .4rem;
+    }
+    .error-msg.visible {
+      display: flex;
+      animation: shake .28s ease;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-4px); }
+      75%      { transform: translateX(4px); }
+    }
+
+    /* ── button — dark fill matching nav "Login" style on site ── */
+    button[type="submit"] {
+      width: 100%; margin-top: .5rem;
+      padding: .8rem;
+      background: var(--black);
+      border: 1px solid var(--teal);
+      border-radius: 3px;
+      font-family: 'Inter', sans-serif;
+      font-size: var(--f-sub);
+      font-weight: var(--w-semi);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--teal);
+      cursor: pointer;
+      transition: background .2s, box-shadow .2s, transform .1s;
+      box-shadow: 0 0 16px rgba(97,255,247,.08);
+    }
+    button[type="submit"]:hover {
+      background: rgba(97,255,247,.07);
+      box-shadow: 0 0 28px rgba(97,255,247,.18);
+      transform: translateY(-1px);
+    }
+    button[type="submit"]:active { transform: translateY(0); }
+
+    /* ── footer note ── */
+    .card-footer {
+      margin-top: 1.75rem; padding-top: 1.25rem;
+      border-top: 1px solid rgba(97,255,247,.07);
+      font-size: var(--f-body);
+      font-weight: var(--w-light);
+      color: rgba(107,130,160,.55);
+      text-align: center;
+      line-height: 1.7;
+    }
+    .card-footer a {
+      color: var(--teal);
+      text-decoration: none;
+      font-weight: 400;
+    }
+    .card-footer a:hover { text-decoration: underline; }
+
+    /* ── success overlay ── */
+    .success-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 50;
+      background: var(--bg);
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; gap: .5rem;
+    }
+    .success-overlay.show { display: flex; animation: fadeIn .35s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .success-ring {
+      width: 58px; height: 58px; border-radius: 50%;
+      border: 1.5px solid var(--teal);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 0 28px rgba(97,255,247,.2);
+      animation: popIn .4s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes popIn {
+      from { transform: scale(.5); opacity: 0; }
+      to   { transform: scale(1);  opacity: 1; }
+    }
+    .success-ring svg {
+      width: 24px; height: 24px;
+      stroke: var(--teal); stroke-width: 2; fill: none;
+    }
+
+    .success-overlay h2 {
+      font-size: var(--f-heading);
+      font-weight: var(--w-semi);
+      color: var(--white);
+      letter-spacing: -.01em;
+    }
+    .success-overlay p {
+      font-size: var(--f-sub);
+      font-weight: var(--w-light);
+      color: var(--muted);
+      margin-top: .25rem;
+    }
+    .success-redirect {
+      font-size: var(--f-body);
+      font-weight: var(--w-semi);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-top: .75rem;
+    }
+
+    @media (max-width: 480px) {
+      .card-body { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="glow-tl"></div>
+
+<div class="scene">
+  <div class="card">
+    <div class="card-bar"></div>
+    <div class="card-body">
+
+      <!-- Logo + brand -->
+      <div class="brand">
+        <!-- SVG recreation of the circular arrow mark from the site -->
+        <div class="logo-mark">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="24" r="22" stroke="#61FFF7" stroke-width="1.5" stroke-opacity="0.25"/>
+            <circle cx="24" cy="24" r="22" stroke="url(#tealArc)" stroke-width="2"
+              stroke-dasharray="90 48" stroke-linecap="round"/>
+            <path d="M24 10 C15.16 10 8 17.16 8 26 C8 34.84 15.16 42 24 42"
+              stroke="#61FFF7" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
+            <path d="M20 7 L24 11 L20 15" stroke="#61FFF7" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="tealArc" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#61FFF7"/>
+                <stop offset="100%" stop-color="#61FFF7" stop-opacity="0.1"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-name">hdships <span class="tl">·</span></div>
+          <div class="brand-tagline">Agent HQ</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Heading -->
+      <h1>Welcome to<br/>Agent HQ</h1>
+      <p class="subhead">Enter the access code from your welcome email to access the Agent HQ portal.</p>
+
+      <!-- Form -->
+      <form id="gate-form" onsubmit="checkPassword(event)">
+        <div class="field">
+          <label for="pwd">Access Code</label>
+          <div class="input-wrap">
+            <input type="password" id="pwd" placeholder="Enter your access code" autocomplete="off"/>
+            <button type="button" class="toggle-vis" onclick="toggleVis()" aria-label="Show / hide">
+              <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <div class="error-msg" id="error-msg">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Incorrect access code. Please check your welcome email and try again.
+          </div>
+        </div>
+
+        <button type="submit">Access Agent HQ</button>
+      </form>
+
+      <div class="card-footer">
+        Your access code was included in your welcome email from HDShips.<br/>
+        Need help? <a href="mailto:onboarding@hdships.com">onboarding@hdships.com</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Success overlay -->
+<div class="success-overlay" id="success-overlay">
+  <div class="success-ring">
+    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+  <h2>Access Granted</h2>
+  <p>Redirecting you to Agent HQ…</p>
+  <p class="success-redirect">&#9658; Loading HDShips Agent HQ</p>
+</div>
+
+<script>
+  // ── CONFIGURATION ──────────────────────────────────────────
+  // 1. Set your shared access code here
+  const CORRECT_PASSWORD = "HDShips2025";
+
+  // 2. Replace with your actual Google Site URL
+  const REDIRECT_URL = "https://sites.google.com/your-site-url-here";
+  // ───────────────────────────────────────────────────────────
+
+  function checkPassword(e) {
+    e.preventDefault();
+    const input   = document.getElementById('pwd').value.trim();
+    const errorEl = document.getElementById('error-msg');
+
+    if (input === CORRECT_PASSWORD) {
+      errorEl.classList.remove('visible');
+      document.getElementById('success-overlay').classList.add('show');
+      setTimeout(() => { window.location.href = REDIRECT_URL; }, 2200);
+    } else {
+      errorEl.classList.remove('visible');
+      void errorEl.offsetWidth; // retrigger animation
+      errorEl.classList.add('visible');
+      document.getElementById('pwd').value = '';
+      document.getElementById('pwd').focus();
+    }
+  }
+
+  function toggleVis() {
+    const field = document.getElementById('pwd');
+    const icon  = document.getElementById('eye-icon');
+    if (field.type === 'password') {
+      field.type = 'text';
+      icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+    } else {
+      field.type = 'password';
+      icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+    }
+  }
+</script>
+</body>
+</html>
